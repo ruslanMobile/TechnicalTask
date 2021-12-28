@@ -3,17 +3,15 @@ package com.example.technical_task2.network
 import com.example.technical_task2.models.ModelListId
 import com.example.technical_task2.models.ModelResult
 import io.reactivex.Observable
-import io.reactivex.Single
-import retrofit2.Call
+
 import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Headers
+
 import retrofit2.http.Path
 
 interface Api {
     @GET("list")
-    fun getList(@Header("Authorization") token:String) : Call<ModelListId>
+    fun getList() : Observable<ModelListId>
 
     @GET("get/{id}")
-    fun getPerson(@Header("Authorization") token:String, @Path("id") idPerson: String) : Observable<ModelResult>
+    fun getPerson(@Path("id") idPerson: String) : Observable<ModelResult>
 }

@@ -1,6 +1,5 @@
 package com.example.technical_task2.network
 
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -14,37 +13,33 @@ object RetrofitClient {
 
     @Synchronized
     fun getInstance(): Api {
-        if (instance == null)
+        if (instance == null) {
+
+            val logging = HttpLoggingInterceptor()
+            logging.level = HttpLoggingInterceptor.Level.BODY
+
+            val httpClient = OkHttpClient.Builder()
+            httpClient.addInterceptor { chain ->
+                val original = chain.request()
+                val requestBuilder = original.newBuilder()
+                    .header("Authorization", "Bearer ${Credentials.TOKEN}")
+                val request = requestBuilder.build()
+                chain.proceed(request)
+            }
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .addNetworkInterceptor(logging)
+
+            val client: OkHttpClient = httpClient.build()
+
             instance = Retrofit.Builder()
+                .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .baseUrl(Credentials.BASE_URL)
                 .build()
                 .create(Api::class.java)
-
+        }
         return instance as Api
     }
-}/*
-val logging = HttpLoggingInterceptor()
-logging.level = HttpLoggingInterceptor.Level.BODY
-
-val httpClient = OkHttpClient.Builder()
-httpClient.addInterceptor { chain ->
-    val original = chain.request()
-
-    // Request customization: add request headers
-    val requestBuilder = original.newBuilder()
-        .header("Authorization", "Bearer ${Credentials.TOKEN}") // <-- this is the important line
-
-    val request = requestBuilder.build()
-    chain.proceed(request)
 }
-
-
-httpClient.connectTimeout(30, TimeUnit.SECONDS)
-httpClient.readTimeout(30, TimeUnit.SECONDS)
-
-httpClient.addNetworkInterceptor(logging)
-
-val okHttpClient=httpClient.build()
-val client: OkHttpClient = httpClient.build()*/
