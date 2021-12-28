@@ -3,7 +3,14 @@ package com.example.technical_task2.repository
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.technical_task2.models.ModelListId
+import com.example.technical_task2.models.ModelResult
+import com.example.technical_task2.network.Credentials
 import com.example.technical_task2.network.RetrofitClient
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.exceptions.Exceptions
+import io.reactivex.plugins.RxJavaPlugins
+import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -34,8 +41,30 @@ class RetrofitRepository {
 
     fun getPeople(body: ModelListId?) {
         var list = body?.data?.toList()
-        for (i in list!!){
+        var listResult = mutableListOf<ModelResult>()
 
-        }
+        var retrofit = RetrofitClient.getInstance()
+        Observable.fromIterable(list)
+            .flatMap {
+                Log.d("MyLog", "STEP")
+                Observable.just(it)
+                    .flatMap {
+                        retrofit.getPerson("Bearer ${Credentials.TOKEN}", it)
+                    }
+                    .doOnError { Log.d("MyLog", "ERROR: " + it.message) }
+                    .onErrorResumeNext(Observable.empty())
+
+            }
+            .toList()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                for (el in it) {
+                    Log.d("MyLog", "STEP sub " + el.data)
+                    listResult.add(el)
+                }
+            }, {
+                Log.d("MyLog", "Error: " + it.message)
+            })
     }
 }
