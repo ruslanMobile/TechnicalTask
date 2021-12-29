@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.technical_task2.models.ModelListId
 import com.example.technical_task2.models.ModelResult
+import com.example.technical_task2.models.ModelWrapResult
 import com.example.technical_task2.network.Credentials
 import com.example.technical_task2.network.RetrofitClient
 import io.reactivex.Observable
@@ -13,8 +14,8 @@ import io.reactivex.schedulers.Schedulers
 
 class RetrofitRepository {
 
-    private val mutableLiveDataModelResult: MutableLiveData<List<ModelResult>> = MutableLiveData()
-    val liveDataModelResult: LiveData<List<ModelResult>> = mutableLiveDataModelResult
+    private val mutableLiveDataModelResult: MutableLiveData<ModelWrapResult<List<ModelResult>>> = MutableLiveData()
+    val liveDataModelResult: LiveData<ModelWrapResult<List<ModelResult>>> = mutableLiveDataModelResult
 
     fun getListId() {
         var call = RetrofitClient.getInstance()
@@ -24,8 +25,9 @@ class RetrofitRepository {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 getPeople(it)
-            },{
+            }, {
                 Log.d("MyLog", "Error list: " + it.message)
+                mutableLiveDataModelResult.value = ModelWrapResult.error(it.message, null)
             })
     }
 
@@ -48,9 +50,10 @@ class RetrofitRepository {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                mutableLiveDataModelResult.value = it
+                mutableLiveDataModelResult.value = ModelWrapResult.success(it)
             }, {
-                Log.d("MyLog", "Error: " + it.message)
+                Log.d("MyLog", "Error element: " + it.message)
+                mutableLiveDataModelResult.value = ModelWrapResult.error(it.message, null)
             })
     }
 }
