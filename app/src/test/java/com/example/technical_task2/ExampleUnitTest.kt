@@ -1,17 +1,30 @@
 package com.example.technical_task2
 
-import org.junit.Test
-
+import com.example.technical_task2.repository.RetrofitRepository
+import com.example.technical_task2.viewmodels.MainViewModel
 import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.junit.MockitoJUnitRunner
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
+@RunWith(MockitoJUnitRunner::class)
 class ExampleUnitTest {
+    lateinit var repository: RetrofitRepository
+    lateinit var viewModel: MainViewModel
+
+    @Before
+    fun init() {
+        repository = RetrofitRepository()
+        viewModel = MainViewModel(repository)
+    }
+
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun liveDataRepositoryShouldBeNotNull() {
+        assertNotNull(repository.liveDataModelResult)
+    }
+    @Test
+    fun liveDataViewModelShouldBeNotNull() {
+        assertNotNull(viewModel.liveDataModelResult)
     }
 }

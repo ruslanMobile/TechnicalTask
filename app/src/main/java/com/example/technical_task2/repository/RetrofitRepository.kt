@@ -17,6 +17,7 @@ class RetrofitRepository {
     private val mutableLiveDataModelResult: MutableLiveData<ModelWrapResult<List<ModelResult>>> = MutableLiveData()
     val liveDataModelResult: LiveData<ModelWrapResult<List<ModelResult>>> = mutableLiveDataModelResult
 
+    //Get list all people`s ids
     fun getListId() {
         var call = RetrofitClient.getInstance()
 
@@ -24,20 +25,22 @@ class RetrofitRepository {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                getPeople(it)
+                it?.let {
+                    getPeople(it)
+                }
             }, {
                 Log.d("MyLog", "Error list: " + it.message)
                 mutableLiveDataModelResult.value = ModelWrapResult.error(it.message, null)
             })
     }
 
+    //Get all info about people
     fun getPeople(body: ModelListId?) {
         var list = body?.data?.toList()
         var retrofit = RetrofitClient.getInstance()
 
         Observable.fromIterable(list)
             .flatMap {
-                Log.d("MyLog", "STEP")
                 Observable.just(it)
                     .flatMap {
                         retrofit.getPerson(it)

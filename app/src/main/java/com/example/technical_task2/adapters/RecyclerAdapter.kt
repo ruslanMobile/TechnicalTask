@@ -44,6 +44,7 @@ class RecyclerAdapter(
         }
     }
 
+    //Show profile
     interface ClickShowProfileListener {
         fun onClickShowProfile(position: Int)
     }

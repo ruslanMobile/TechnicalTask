@@ -10,12 +10,14 @@ import android.widget.TextView
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.example.technical_task2.viewmodels.FactoryViewModel
 import com.example.technical_task2.R
 import com.example.technical_task2.adapters.RecyclerAdapter
 import com.example.technical_task2.fragments.ProfileFragment
 import com.example.technical_task2.models.ModelResult
 import com.example.technical_task2.models.ModelWrapResult
 import com.example.technical_task2.models.ModelWrapResult.*
+import com.example.technical_task2.repository.RetrofitRepository
 import com.example.technical_task2.viewmodels.MainViewModel
 
 class MainActivity : AppCompatActivity(),RecyclerAdapter.ClickShowProfileListener {
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity(),RecyclerAdapter.ClickShowProfileListene
         textError = findViewById(R.id.textError)
         progressBar = findViewById(R.id.progressBar)
         buttonGet = findViewById(R.id.buttonGetData)
+        //Get list
         buttonGet.setOnClickListener {
             viewModel.getListId()
             progressBar.visibility = View.VISIBLE
@@ -47,11 +50,11 @@ class MainActivity : AppCompatActivity(),RecyclerAdapter.ClickShowProfileListene
         adapter = RecyclerAdapter(listOf(),this)
         recyclerView.adapter = adapter
 
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this, FactoryViewModel(RetrofitRepository())).get(MainViewModel::class.java)
+        //Checks whether the Api request is successful and show
         viewModel.liveDataModelResult.observe(this, {
             when (it.status) {
                 Status.SUCCESS -> {
-                    Log.d("MyLog", "SUCCESS MAIN")
                     it.data?.let { it1 ->
                         listPeople = it1
                         adapter.changeList(it1)
@@ -61,7 +64,6 @@ class MainActivity : AppCompatActivity(),RecyclerAdapter.ClickShowProfileListene
 
                 }
                 Status.ERROR -> {
-                    Log.d("MyLog", "ERROR MAIN")
                     textError.text = "Error: " + it.message + ". Please try again"
                     textError.visibility = View.VISIBLE
                     progressBar.visibility = View.GONE
